@@ -1,0 +1,16 @@
+buatkan issue.md, berisi palning untuk membuat ini:
+
+buat project baru di folder ini
+
+menggunakan Bun
+
+dan gunakan dependensi berikut:
+- ElysiaJS
+- Drizzle
+- PostgreSQL
+
+jangan terlalu low level atau detail
+
+cukup instruksikan secara hight level
+
+nanti document planning nya akan di gunakan oleh programmer atau model yang lebih murah untk diimplementasikan

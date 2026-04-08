@@ -2,10 +2,11 @@ import { Elysia, t } from 'elysia';
 import { db } from './db';
 import { users, posts } from './db/schema';
 import type { NewUser, NewPost } from './db';
-import { usersRoute } from './routes/users-route';
+import { usersRoute, authRoute } from './routes/users-route';
 
 const app = new Elysia()
   .use(usersRoute)
+  .use(authRoute)
 
   // Health check endpoint
   .get('/health', () => {

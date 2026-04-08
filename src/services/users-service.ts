@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { users } from '../db/schema';
+import { users, sessions } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
 export interface RegisterUserPayload {
@@ -28,4 +28,34 @@ export async function registerUser(payload: RegisterUserPayload) {
   }).returning();
 
   return { success: true, data: newUser };
+}
+
+export interface LoginUserPayload {
+  email: string;
+  password: string;
+}
+
+export async function loginUser(payload: LoginUserPayload) {
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, payload.email),
+  });
+
+  if (!user) {
+    return { success: false, error: 'email / password salah' };
+  }
+
+  const passwordMatch = await Bun.password.verify(payload.password, user.password);
+
+  if (!passwordMatch) {
+    return { success: false, error: 'email / password salah' };
+  }
+
+  const token = crypto.randomUUID();
+
+  await db.insert(sessions).values({
+    token,
+    userId: user.id,
+  });
+
+  return { success: true, data: token };
 }

@@ -1,4 +1,5 @@
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 // Example table: users
 export const users = pgTable('users', {
@@ -19,10 +20,24 @@ export const posts = pgTable('posts', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+}));
+
+export const postsRelations = relations(posts, ({ one }) => ({
+  author: one(users, {
+    fields: [posts.authorId],
+    references: [users.id],
+  }),
+}));
+
 // Export all schemas
 export const schema = {
   users,
   posts,
+  usersRelations,
+  postsRelations,
 };
 
 // Infer types

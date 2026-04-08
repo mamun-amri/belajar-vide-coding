@@ -1,7 +1,6 @@
-import { Elysia, t } from 'elysia';
-import { db } from './db';
-import { users, posts } from './db/schema';
-import type { NewUser, NewPost } from './db';
+import { Elysia } from 'elysia';
+import { userRoutes } from './routes/userRoutes';
+import { postRoutes } from './routes/postRoutes';
 
 const app = new Elysia()
 
@@ -23,48 +22,9 @@ const app = new Elysia()
     };
   })
 
-  // Users endpoints
-  .get('/users', async () => {
-    const users = await db.query.users.findMany();
-    return users;
-  })
-
-  .post('/users',
-    async ({ body }) => {
-      const newUser = await db.insert(users).values(body).returning();
-      return newUser;
-    },
-    {
-      body: t.Object({
-        email: t.String(),
-        name: t.Optional(t.String()),
-      }),
-    }
-  )
-
-  // Posts endpoints
-  .get('/posts', async () => {
-    const posts = await db.query.posts.findMany({
-      with: {
-        author: true,
-      },
-    });
-    return posts;
-  })
-
-  .post('/posts',
-    async ({ body }) => {
-      const newPost = await db.insert(posts).values(body).returning();
-      return newPost;
-    },
-    {
-      body: t.Object({
-        title: t.String(),
-        content: t.Optional(t.String()),
-        authorId: t.Optional(t.Number()),
-      }),
-    }
-  )
+  // Use routes
+  .use(userRoutes)
+  .use(postRoutes)
 
   // Error handling
   .onError(({ code, error }) => {

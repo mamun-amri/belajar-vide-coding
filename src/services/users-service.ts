@@ -52,10 +52,31 @@ export async function loginUser(payload: LoginUserPayload) {
 
   const token = crypto.randomUUID();
 
-  await db.insert(sessions).values({
-    token,
-    userId: user.id,
-  });
+  await db.update(users).set({ token }).where(eq(users.id, user.id));
 
   return { success: true, data: token };
+}
+
+export class ResponseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ResponseError';
+  }
+}
+
+export async function getCurrentUser(token: string) {
+  const user = await db.query.users.findFirst({
+    where: eq(users.token, token),
+  });
+
+  if (!user) {
+    throw new ResponseError('unauthorized');
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt,
+  };
 }

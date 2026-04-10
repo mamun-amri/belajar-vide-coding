@@ -80,3 +80,17 @@ export async function getCurrentUser(token: string) {
     createdAt: user.createdAt,
   };
 }
+
+export async function logout(token: string) {
+  const session = await db.query.sessions.findFirst({
+    where: eq(sessions.token, token),
+  });
+
+  if (!session) {
+    throw new ResponseError('unauthorized');
+  }
+
+  await db.delete(sessions).where(eq(sessions.token, token));
+
+  return 'ok';
+}

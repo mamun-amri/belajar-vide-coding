@@ -52,7 +52,10 @@ export async function loginUser(payload: LoginUserPayload) {
 
   const token = crypto.randomUUID();
 
-  await db.update(users).set({ token }).where(eq(users.id, user.id));
+  await db.insert(sessions).values({
+    token,
+    userId: user.id,
+  });
 
   return { success: true, data: token };
 }
@@ -65,8 +68,16 @@ export class ResponseError extends Error {
 }
 
 export async function getCurrentUser(token: string) {
+  const session = await db.query.sessions.findFirst({
+    where: eq(sessions.token, token),
+  });
+
+  if (!session) {
+    throw new ResponseError('unauthorized');
+  }
+
   const user = await db.query.users.findFirst({
-    where: eq(users.token, token),
+    where: eq(users.id, session.userId),
   });
 
   if (!user) {
@@ -82,15 +93,11 @@ export async function getCurrentUser(token: string) {
 }
 
 export async function logout(token: string) {
-  const session = await db.query.sessions.findFirst({
-    where: eq(sessions.token, token),
-  });
+  const result = await db.delete(sessions).where(eq(sessions.token, token)).returning();
 
-  if (!session) {
+  if (result.length === 0) {
     throw new ResponseError('unauthorized');
   }
-
-  await db.delete(sessions).where(eq(sessions.token, token));
 
   return 'ok';
 }
